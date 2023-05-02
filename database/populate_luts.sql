@@ -22,6 +22,10 @@ values
     ('Bull trout', 'garber', now()),
     ('Steelhead', 'garber', now());
 
+insert into species_group_type_lut(species_group_type_description, created_by, created_datetime)
+values ('Salmon', 'garbetjg', now()); -- these groupings are probably different for each agency
+-- maybe a column to link to each agency so they can defined
+
 insert into fishery_type_lut (fishery_type_code, fishery_type_description, created_by, created_datetime)
 values
     ('CM', 'Commercial fishing', 'garber', now()),
@@ -31,14 +35,18 @@ insert into regulation_age_lut
     (regulation_age_description, created_by, created_datetime)
 values
     ('Adults', 'garber', now()),
-    ('Juveniles', 'garber', now());
+    ('Juveniles', 'garber', now()),
+    ('All Ages', 'garber', now());
 
 insert into regulation_type_lut (regulation_type_code, regulation_type_description, created_by, created_datetime)
 values
     ('MSF', 'Mark-Selective Fishery', 'garber', now()),
     ('NS', 'Non-Selective Fishery', 'garber', now()),
     ('NR', 'Non-Retention Fishery', 'garber', now()),
-    ('CNR', 'Catch and Release Fishery', 'garber', now());
+    ('CNR', 'Catch and Release Fishery', 'garber', now()),
+    ('MIX', 'Mixed Mark-Selective and Non-Selective', 'garber', now()) -- this is probably better represented with another table
+    -- leaving sort of ambiguous for now, if needed will figure out a good way to query it out with another table
+    ;
 
 insert into regulation_authority_lut
     (regulation_authority_code, regulation_authority_name, created_by, created_datetime)
@@ -72,53 +80,3 @@ values
     ('2022-2023', 'garber', now()),
     ('2023', 'garber', now());
 
--- parent and child example common table expressions
--- parent
-with parent as(
-    insert into catch_area_lut(catch_area_code, catch_area_description,
-                               created_by, created_datetime)
-    values
-        ('804', 'Puyallup River', 'garber', now())
-    returning catch_area_id, created_datetime, created_by
-) --children
-insert into catch_area_lut(parent_catch_area_id, catch_area_code, catch_area_description,
-                           created_by, created_datetime)
-select
-    catch_area_id::uuid as parent_catch_area_id,
-    '804' as catch_area_code,
-    E'From the 11th St. Bridge to 400\' downstream of Clark\'s Creek' as catch_area_description,
-    created_by,
-    created_datetime
-from parent
-union all
-select
-    catch_area_id::uuid as parent_catch_area_id,
-    '804' as catch_area_code,
-    E'From 400\' downstream of Clark\'s Creek to 400\' upstream of Clark\'s Creek' as catch_area_description,
-    created_by,
-    created_datetime
-from parent
-union all
-select
-    catch_area_id::uuid as parent_catch_area_id,
-    '804' as catch_area_code,
-    E'From 400\' upstream of Clark\'s Creek to East Main Bridge' as catch_area_description,
-    created_by,
-    created_datetime
-from parent
-union all
-select
-    catch_area_id::uuid as parent_catch_area_id,
-    '804' as catch_area_code,
-    E'From East Main Bridge to Carbon River' as catch_area_description,
-    created_by,
-    created_datetime
-from parent
-union all
-select
-    catch_area_id::uuid as parent_catch_area_id,
-    '804' as catch_area_code,
-    E'From Carbon River upstream' as catch_area_description,
-    created_by,
-    created_datetime
-from parent;
