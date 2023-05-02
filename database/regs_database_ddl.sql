@@ -121,8 +121,8 @@ create table bag_limit_type_lut(
 
 create table species_group(
     species_group_id uuid primary key default gen_random_uuid(),
-    species_id uuid not null references species_lut(species_id),
-    species_group_name text not null,
+    species_id uuid not null references species_lut(species_id), -- be carefull joining this table!
+    bag_limit_id uuid not null references bag_limit(bag_limit_id),
     species_group_type_id uuid references species_group_type_lut(species_group_type_id)
 );
 
@@ -154,10 +154,9 @@ create table fishery_regulation(
 
 create table bag_limit(
     bag_limit_id uuid primary key default gen_random_uuid(),
-    parent_bag_limit_id uuid not null references bag_limit(bag_limit_id),
+    parent_bag_limit_id uuid references bag_limit(bag_limit_id),
     fishery_regulation_id uuid not null references fishery_regulation(fishery_regulation_id),
     regulation_age_id uuid not null references regulation_age_lut(regulation_age_id),
-    species_group_id uuid not null references species_group(species_group_id),
     regulation_type_id uuid not null references regulation_type_lut(regulation_type_id),
     bag_limit_type_id uuid not null references bag_limit_type_lut(bag_limit_type_id),
     maximum_size_limit_centimeters real,
