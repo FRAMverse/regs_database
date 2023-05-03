@@ -108,6 +108,12 @@ create table fishery_type_lut(
     modified_datetime timestamptz
 );
 
+create table bag_limit_angler_resident_status_lut(
+    bag_limit_angler_resident_status_id uuid primary key default gen_random_uuid(),
+    bag_limit_angler_resident_status_description text not null
+     );
+
+
 create table bag_limit_type_lut(
     bag_limit_type_id uuid primary key default gen_random_uuid(),
     big_limit_type_description varchar(30) not null,
@@ -154,7 +160,7 @@ create table fishery_regulation(
 
 create table bag_limit(
     bag_limit_id uuid primary key default gen_random_uuid(),
-    parent_bag_limit_id uuid references bag_limit(bag_limit_id),
+    parent_bag_limit_id uuid references bag_limit(bag_limit_id), -- is this self-relation really needed?
     fishery_regulation_id uuid not null references fishery_regulation(fishery_regulation_id),
     regulation_age_id uuid not null references regulation_age_lut(regulation_age_id),
     regulation_type_id uuid not null references regulation_type_lut(regulation_type_id),
