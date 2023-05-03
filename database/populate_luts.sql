@@ -12,6 +12,13 @@ values
     ('GN', 'Commerical Gillnet Gear', 'garber', now()),
     ('SN', 'Commerical Set Net Gear', 'garber', now());
 
+
+insert into bag_limit_angler_resident_status_lut(bag_limit_angler_resident_status_description)
+values
+    ('Resident'),
+    ('Non-Resident'),
+    ('Not applicable');
+
 insert into species_lut (species_name, created_by, created_datetime)
 values
     ('Chinook salmon', 'garber', now()),
@@ -63,7 +70,7 @@ insert into bag_limit_type_lut(big_limit_type_description, created_by, created_d
 values ('Annual', 'garber', now()),
         ('Daily', 'garber', now()),
         ('Mixed', 'garber', now()), -- need to better define Mixed/Combined, maybe another column more descriptive
-        ('Combined', 'garber', now()),
+        ('Shared species', 'garber', now()),
         ('First fish encountered', 'garber', now());
 
 insert into fishery_regulation_type_lut
