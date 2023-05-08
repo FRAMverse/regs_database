@@ -10,7 +10,7 @@ editor_options:
   chunk_output_type: inline
 ---
 
-This is a short demonstration of output of regulation data from a purposed 
+This is a short demonstration of output of regulation data from a proposed 
 regulation database for ADFG data. 
 
 
@@ -127,8 +127,41 @@ order by f.fishery_description, species_group_type_description;
 ```
 Using the hierarchical properties of catch areas its possible to query a parent or grandparent catch area and return all children and grandchildren areas and their regulations without any preexisting knowledge of those sub areas.
 
-```{r, connection=con}
-# work on this query
+```{sql, connection=con}
+with recursive catch_areas as (
+select cal.catch_area_description,
+       cal.catch_area_id
+from catch_area_lut cal
+where catch_area_description = 'South East Alaska'
+union all
+select cal.catch_area_description,
+       cal.catch_area_id
+from catch_area_lut cal
+join catch_areas as c on c.catch_area_id = cal.parent_catch_area_id
+)
+select
+    fr.start_datetime,
+    fr.end_datetime,
+    cal.catch_area_description,
+    sl.species_group_type_description,
+    rtl.regulation_type_code,
+    bl.minimum_size_limit_centimeters,
+    bl.maximum_size_limit_centimeters,
+    bltl.bag_limit_type_description,
+    blarsl.bag_limit_angler_resident_status_description,
+    bl.bag_limit_total
+from
+catch_areas
+join catch_area_lut cal on catch_areas.catch_area_id = cal.catch_area_id
+join fishery f on cal.catch_area_id = f.catch_area_id
+join fishery_regulation fr on f.fishery_id = fr.fishery_id
+join bag_limit bl on fr.fishery_regulation_id = bl.fishery_regulation_id
+join species_group_type_lut sl on bl.species_group_type_id = sl.species_group_type_id
+join regulation_authority_lut ral on f.regulation_authority_id = ral.regulation_authority_id
+join regulation_type_lut rtl on bl.regulation_type_id = rtl.regulation_type_id
+join regulation_age_lut ra on bl.regulation_age_id = ra.regulation_age_id
+join bag_limit_type_lut bltl on bl.bag_limit_type_id = bltl.bag_limit_type_id
+join bag_limit_angler_resident_status_lut blarsl on bl.bag_limit_angler_resident_status_id = blarsl.bag_limit_angler_resident_status_id
 ```
 
 
