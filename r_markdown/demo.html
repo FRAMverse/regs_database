@@ -1493,7 +1493,7 @@ border-radius: 0px;
 
 
 <p>This is a short demonstration of output of regulation data from a
-purposed regulation database for ADFG data.</p>
+proposed regulation database for ADFG data.</p>
 <div id="schema" class="section level1">
 <h1>Schema</h1>
 <div class="figure">
@@ -1973,7 +1973,200 @@ Fairweather)</td>
 query a parent or grandparent catch area and return all children and
 grandchildren areas and their regulations without any preexisting
 knowledge of those sub areas.</p>
-<pre class="r"><code># work on this query</code></pre>
+<pre class="sql"><code>with recursive catch_areas as (
+select cal.catch_area_description,
+       cal.catch_area_id
+from catch_area_lut cal
+where catch_area_description = &#39;South East Alaska&#39;
+union all
+select cal.catch_area_description,
+       cal.catch_area_id
+from catch_area_lut cal
+join catch_areas as c on c.catch_area_id = cal.parent_catch_area_id
+)
+select
+    fr.start_datetime,
+    fr.end_datetime,
+    cal.catch_area_description,
+    sl.species_group_type_description,
+    rtl.regulation_type_code,
+    bl.minimum_size_limit_centimeters,
+    bl.maximum_size_limit_centimeters,
+    bltl.bag_limit_type_description,
+    blarsl.bag_limit_angler_resident_status_description,
+    bl.bag_limit_total
+from
+catch_areas
+join catch_area_lut cal on catch_areas.catch_area_id = cal.catch_area_id
+join fishery f on cal.catch_area_id = f.catch_area_id
+join fishery_regulation fr on f.fishery_id = fr.fishery_id
+join bag_limit bl on fr.fishery_regulation_id = bl.fishery_regulation_id
+join species_group_type_lut sl on bl.species_group_type_id = sl.species_group_type_id
+join regulation_authority_lut ral on f.regulation_authority_id = ral.regulation_authority_id
+join regulation_type_lut rtl on bl.regulation_type_id = rtl.regulation_type_id
+join regulation_age_lut ra on bl.regulation_age_id = ra.regulation_age_id
+join bag_limit_type_lut bltl on bl.bag_limit_type_id = bltl.bag_limit_type_id
+join bag_limit_angler_resident_status_lut blarsl on bl.bag_limit_angler_resident_status_id = blarsl.bag_limit_angler_resident_status_id</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>Displaying records 1 - 10</caption>
+<colgroup>
+<col width="5%" />
+<col width="6%" />
+<col width="19%" />
+<col width="10%" />
+<col width="7%" />
+<col width="10%" />
+<col width="10%" />
+<col width="9%" />
+<col width="15%" />
+<col width="5%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">start_datetime</th>
+<th align="left">end_datetime</th>
+<th align="left">catch_area_description</th>
+<th align="left">species_group_type_description</th>
+<th align="left">regulation_type_code</th>
+<th align="right">minimum_size_limit_centimeters</th>
+<th align="right">maximum_size_limit_centimeters</th>
+<th align="left">bag_limit_type_description</th>
+<th align="left">bag_limit_angler_resident_status_description</th>
+<th align="right">bag_limit_total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Between Cape Fairweather and Dixon Entrance</td>
+<td align="left">Coho</td>
+<td align="left">NS</td>
+<td align="right">40.64</td>
+<td align="right">NA</td>
+<td align="left">Possession</td>
+<td align="left">Not applicable</td>
+<td align="right">12</td>
+</tr>
+<tr class="even">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Between Cape Fairweather and Dixon Entrance</td>
+<td align="left">Coho</td>
+<td align="left">NS</td>
+<td align="right">40.64</td>
+<td align="right">NA</td>
+<td align="left">Daily</td>
+<td align="left">Not applicable</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Yakutat Area (between Cape Suckling and Cape
+Fairweather)</td>
+<td align="left">Coho</td>
+<td align="left">NS</td>
+<td align="right">40.64</td>
+<td align="right">NA</td>
+<td align="left">Possession</td>
+<td align="left">Not applicable</td>
+<td align="right">8</td>
+</tr>
+<tr class="even">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Yakutat Area (between Cape Suckling and Cape
+Fairweather)</td>
+<td align="left">Coho</td>
+<td align="left">NS</td>
+<td align="right">40.64</td>
+<td align="right">NA</td>
+<td align="left">Daily</td>
+<td align="left">Not applicable</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Yakutat Area (between Cape Suckling and Cape
+Fairweather)</td>
+<td align="left">Chinook</td>
+<td align="left">NS</td>
+<td align="right">50.80</td>
+<td align="right">NA</td>
+<td align="left">Daily</td>
+<td align="left">Resident</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Yakutat Area (between Cape Suckling and Cape
+Fairweather)</td>
+<td align="left">Chinook</td>
+<td align="left">NS</td>
+<td align="right">NA</td>
+<td align="right">50.7746</td>
+<td align="left">Daily</td>
+<td align="left">Resident</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Yakutat Area (between Cape Suckling and Cape
+Fairweather)</td>
+<td align="left">Chinook</td>
+<td align="left">NS</td>
+<td align="right">71.12</td>
+<td align="right">NA</td>
+<td align="left">Annual</td>
+<td align="left">Non-resident</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Yakutat Area (between Cape Suckling and Cape
+Fairweather)</td>
+<td align="left">Chinook</td>
+<td align="left">NS</td>
+<td align="right">50.80</td>
+<td align="right">NA</td>
+<td align="left">Possession</td>
+<td align="left">Resident</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">Yakutat Area (between Cape Suckling and Cape
+Fairweather)</td>
+<td align="left">Chinook</td>
+<td align="left">NS</td>
+<td align="right">NA</td>
+<td align="right">50.7746</td>
+<td align="left">Possession</td>
+<td align="left">Resident</td>
+<td align="right">10</td>
+</tr>
+<tr class="even">
+<td align="left">2022-01-01</td>
+<td align="left">2022-12-31 23:59:00</td>
+<td align="left">South East Alaska</td>
+<td align="left">Chinook</td>
+<td align="left">NR</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+</div>
 <p>Bag limits are shared between rows and also have a hierarchical
 relationship. For example, Coho salmon between Cape Suckling and Cape
 Fairweather have a daily limit of four fish but a possession limit of
