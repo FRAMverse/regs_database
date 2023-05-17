@@ -9,8 +9,21 @@ from . import models, schemas
 def get_catch_areas(db: Session):
     return db.query(models.CatchAreaLUT).options(joinedload(models.CatchAreaLUT.childen_catch_areas)).filter(models.CatchAreaLUT.parent_catch_area_id == None).all()
 
+def lut(db: Session, lut: str):
+    allowed_tables = {
+        'catch_area' : models.CatchAreaLUT,
+        'regulation_type': models.RegulationTypeLUT
+    }
+    return db.query(allowed_tables[lut]).all()
+
+
+
 def get_regs(db: Session):
-    return db.query(models.Fishery).options(joinedload(models.Fishery.fishery_regulation)).all()
+    return db.query(models.Fishery, 
+                    models.CatchAreaLUT.catch_area_id, \
+                    models.CatchAreaLUT.catch_area_description) \
+                    .options(joinedload(models.Fishery.fishery_regulation)) \
+                    .join(models.CatchAreaLUT).all()
 # def get_geo(db: Session, catch_area_id: UUID):
 #     return db.query(models.CatchArea).filter(models.CatchArea.catch_area_id == catch_area_id).first()
 

@@ -20,6 +20,7 @@ class CatchAreaLUT(Base):
     modified_by = Column(String)
     modified_datetime = Column(Date)
     childen_catch_areas = relationship('CatchAreaLUT', backref=backref("parent", remote_side=[catch_area_id]))
+    fishery = relationship('Fishery', back_populates = 'catch_area')
 
 class SpeciesLUT(Base):
     __tablename__ = 'species_lut'
@@ -88,12 +89,31 @@ class GearTypeLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
+    fishery_regulation = relationship('FisheryRegulation', back_populates='gear_type')
 
 # how useful is the management year? think about removing it
 class FisheryManagementYearLUT(Base):
     __tablename__ = 'fishery_management_year_lut'
     fishery_management_year_id = Column(UUID, primary_key=True, server_default='uuid_generate_v4()')
     fishery_management_year = Column(String, nullable=False)
+    created_by = Column(String, nullable=False)
+    created_datetime = Column(Date, nullable=False)
+    modified_by = Column(String)
+    modified_datetime = Column(Date)
+
+class BagLimitTypeLUT(Base):
+    __tablename__ = 'bag_limit_type_lut'
+    bag_limit_type_id = Column(UUID, primary_key=True, server_default='uuid_generate_v4()')
+    bag_limit_type_description = Column(String, nullable=False)
+    created_by = Column(String, nullable=False)
+    created_datetime = Column(Date, nullable=False)
+    modified_by = Column(String)
+    modified_datetime = Column(Date)
+
+class BagLimitResidentStatusLUT(Base):
+    __tablename__ = 'bag_limit_angler_resident_status_lut'
+    bag_limit_angler_resident_status_id = Column(UUID, primary_key=True, server_default='uuid_generate_v4()')
+    bag_limit_angler_resident_status_description = Column(String, nullable=False)
     created_by = Column(String, nullable=False)
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
@@ -116,6 +136,7 @@ class Fishery(Base):
     modified_by = Column(String)
     modified_datetime = Column(Date)
     fishery_regulation = relationship('FisheryRegulation', back_populates='fishery')
+    catch_area = relationship('CatchAreaLUT', back_populates='fishery')
     # relationships
 
 class FisheryRegulation(Base):
@@ -131,6 +152,7 @@ class FisheryRegulation(Base):
     modified_by = Column(String)
     modified_datetime = Column(Date)
     fishery = relationship('Fishery', back_populates='fishery_regulation')
+    gear_type = relationship('GearTypeLUT', back_populates='fishery_regulation')
 
 
 # class Rules(Base):
@@ -145,31 +167,3 @@ class FisheryRegulation(Base):
 #     regulation = relationship("RegulationTypeLUT", back_populates="rules", uselist=False)
 #     species = relationship("SpeciesLUT", back_populates="rules", uselist=False)
 
-
-# class CatchAreaRaw(Base):
-#     __tablename__ = "catch_area"
-#     catch_area_id = Column(UUID, primary_key=True, server_default='uuid_generate_v4()')
-#     description = Column(String)
-#     geom = Column(String)
-#     rules = relationship("Rules", back_populates="catch_area")
-
-# class CatchArea(Base):
-#     __tablename__ = "catch_area_geojson"
-#     catch_area_id = Column(String, primary_key=True)
-#     description = Column(String)
-#     geom = Column(String)
-
-
-# class RegulationTypeLUT(Base):
-#     __tablename__ = 'regulation_type_lut'
-#     regulation_type_id = Column(UUID, primary_key=True, server_default='uuid_generate_v4()')
-#     regulation_type_code = Column(String)
-#     regulation_type_description = Column(String)
-
-#     rules = relationship('Rules', back_populates='regulation')
-
-# class SpeciesLUT(Base):
-#     __tablename__ = 'species_lut'
-#     species_id = Column(UUID, primary_key=True, server_default='uuid_generate_v4()')
-#     common_name = Column(String)
-#     rules = relationship('Rules', back_populates = 'species')

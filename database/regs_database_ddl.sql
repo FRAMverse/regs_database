@@ -110,7 +110,11 @@ create table fishery_type_lut(
 
 create table bag_limit_angler_resident_status_lut(
     bag_limit_angler_resident_status_id uuid primary key default gen_random_uuid(),
-    bag_limit_angler_resident_status_description text not null
+    bag_limit_angler_resident_status_description text not null,
+    created_by varchar(10) not null,
+    created_datetime timestamptz not null,
+    modified_by varchar(10),
+    modified_datetime timestamptz
      );
 
 

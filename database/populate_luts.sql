@@ -13,11 +13,11 @@ values
     ('SN', 'Commerical Set Net Gear', 'garber', now());
 
 
-insert into bag_limit_angler_resident_status_lut(bag_limit_angler_resident_status_description)
+insert into bag_limit_angler_resident_status_lut(bag_limit_angler_resident_status_description, created_by, created_datetime)
 values
-    ('Resident'),
-    ('Non-Resident'),
-    ('Not applicable');
+    ('Resident', 'garber', now()),
+    ('Non-Resident', 'garber', now()),
+    ('Not applicable', 'garber', now());
 
 insert into species_lut (species_name, created_by, created_datetime)
 values

@@ -45,6 +45,11 @@ async def get_reg(db: Session = Depends(get_db)):
     regs = crud.get_regs(db)
     return regs
 
+@app.get('/lut/{lut}')
+async def lut(lut: str, db: Session = Depends(get_db)):
+    lut = crud.lut(db, lut)
+    return lut
+
 # @app.get("/geo/{catch_area_id}")
 # async def read_geojson_only_by_area(catch_area_id: UUID, db: Session = Depends(get_db)):
 #     geo = crud.get_geo(db, catch_area_id)
