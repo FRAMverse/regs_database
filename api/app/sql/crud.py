@@ -7,6 +7,9 @@ from . import models, schemas
 from fastapi import HTTPException
 
 
+def get_bags(db: Session):
+    return db.query(models.BagLimit).options(selectinload(models.BagLimit.childen_bag_limits)).all()
+
 
 def get_catch_areas(db: Session):
     return db.query(models.CatchAreaLUT).options(selectinload(models.CatchAreaLUT.childen_catch_areas)).filter(models.CatchAreaLUT.parent_catch_area_id == None).all()
@@ -37,8 +40,10 @@ def lut(db: Session, requested_table: str):
 def get_regs(db: Session):
     return db.query(models.Fishery, 
                     models.CatchAreaLUT.catch_area_id, \
-                    models.CatchAreaLUT.catch_area_description) \
+                    models.CatchAreaLUT.catch_area_description,
+                    models.FisheryTypeLUT.fishery_type_description) \
                     .join(models.CatchAreaLUT) \
+                    .join(models.FisheryTypeLUT)\
                     .options(
                         selectinload(
                             models.Fishery.fishery_regulation

@@ -40,6 +40,11 @@ async def get_catch_areas(db: Session = Depends(get_db)):
     catch_areas = crud.get_catch_areas(db)
     return catch_areas
 
+@app.get("/bag")
+async def get_bags(db: Session = Depends(get_db)):
+    bags = crud.get_bags(db)
+    return bags
+
 @app.get('/reg')
 async def get_reg(db: Session = Depends(get_db)):
     regs = crud.get_regs(db)
