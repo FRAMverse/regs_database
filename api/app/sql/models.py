@@ -32,6 +32,7 @@ class SpeciesLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
+    species_group = relationship('SpeciesGroup', back_populates = 'species')
 
 class SpeciesGroupTypeLUT(Base):
     __tablename__ = 'species_group_type_lut'
@@ -41,6 +42,8 @@ class SpeciesGroupTypeLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
+    bag_limit = relationship('BagLimit', back_populates='species_group_type')
+    species_group = relationship('SpeciesGroup', back_populates = 'species_group_type')
 
 class RegulationTypeLUT(Base):
     __tablename__ = 'regulation_type_lut'
@@ -51,6 +54,7 @@ class RegulationTypeLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
+    bag_limit = relationship('BagLimit', back_populates = 'regulation_type')
 
 class RegulationAgeLUT(Base):
     __tablename__ = 'regulation_age_lut'
@@ -60,6 +64,7 @@ class RegulationAgeLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
+    bag_limit = relationship('BagLimit', back_populates='regulation_age')
 
 class RegulationAuthorityLUT(Base):
     __tablename__ = 'regulation_authority_lut'
@@ -124,6 +129,7 @@ class BagLimitTypeLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
+    bag_limit = relationship('BagLimit', back_populates='bag_limit_type')
 
 class BagLimitResidentStatusLUT(Base):
     __tablename__ = 'bag_limit_angler_resident_status_lut'
@@ -133,6 +139,7 @@ class BagLimitResidentStatusLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
+    bag_limit = relationship('BagLimit', back_populates='resident_status')
 
 ##################
 # Working tables #
@@ -191,5 +198,18 @@ class BagLimit(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
+    bag_limit_type = relationship('BagLimitTypeLUT', back_populates='bag_limit', uselist=False)
+    resident_status = relationship('BagLimitResidentStatusLUT', back_populates='bag_limit', uselist=False)
     fishery_regulation = relationship('FisheryRegulation', back_populates='bag_limit', uselist=False)
+    regulation_age = relationship('RegulationAgeLUT', back_populates='bag_limit', uselist=False)
+    regulation_type = relationship('RegulationTypeLUT', back_populates='bag_limit', uselist=False)
+    species_group_type = relationship('SpeciesGroupTypeLUT', back_populates='bag_limit', uselist=False)
     childen_bag_limits = relationship('BagLimit', backref=backref("parent", remote_side=[bag_limit_id]))
+
+class SpeciesGroup(Base):
+    __tablename__ = 'species_group'
+    species_group_id = Column(UUID, primary_key=True, server_default='uuid_generate_v4()')
+    species_id = Column(UUID, ForeignKey('species_lut.species_id'))
+    species_group_type_id = Column(UUID, ForeignKey('species_group_type_lut.species_group_type_id'), nullable=False) # probably a better way to handle species
+    species = relationship('SpeciesLUT', back_populates='species_group')
+    species_group_type = relationship('SpeciesGroupTypeLUT', back_populates = 'species_group')
