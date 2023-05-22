@@ -21,7 +21,7 @@ class CatchAreaLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
-    childen_catch_areas = relationship('CatchAreaLUT', backref=backref("parent", remote_side=[catch_area_id]))
+    children_catch_areas = relationship('CatchAreaLUT', backref=backref("parent", remote_side=[catch_area_id]))
     fishery = relationship('Fishery', back_populates = 'catch_area')
 
 class SpeciesLUT(Base):

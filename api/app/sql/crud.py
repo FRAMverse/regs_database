@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, subqueryload, joinedload, contains_eager
 from sqlalchemy import func
 from uuid import UUID
 from sqlalchemy.dialects import postgresql
@@ -8,18 +8,35 @@ from fastapi import HTTPException
 
 
 def get_bags(db: Session):
-    return db.query(models.BagLimit)\
+    return db.query(models.BagLimit, models.BagLimitTypeLUT.bag_limit_type_description, models.SpeciesGroupTypeLUT.species_group_type_description)\
+                    .join(models.BagLimitTypeLUT) \
+                    .join(models.SpeciesGroupTypeLUT) \
                     .options(
-                        selectinload(
+                        joinedload(
                             models.BagLimit.childen_bag_limits
-                            )\
-                            .selectinload(models.BagLimit.bag_limit_type)
-                            ) \
-    .all()
+                        )\
+                        .options(joinedload(models.BagLimit.bag_limit_type)) \
+                        .options(joinedload(models.BagLimit.species_group_type)) \
+                                ) \
+                    .all()
 
 
 def get_catch_areas(db: Session):
-    return db.query(models.CatchAreaLUT).options(selectinload(models.CatchAreaLUT.childen_catch_areas)).filter(models.CatchAreaLUT.parent_catch_area_id == None).all()
+        
+
+
+
+        top = db.query(models.CatchAreaLUT).filter(models.CatchAreaLUT.parent_catch_area_id == None).all()
+
+
+        # iterate through the results emmiting select queries for the children
+        def unnester(query):
+            for i in query:
+                i.children_catch_areas
+                unnester(i.children_catch_areas)
+        unnester(top)
+        return top
+    
 
 def lut(db: Session, requested_table: str):
     # allowed tables, only look up tables should be hitting this
@@ -27,14 +44,15 @@ def lut(db: Session, requested_table: str):
         'catch_area' : models.CatchAreaLUT,
         'regulation_type': models.RegulationTypeLUT,
         'regulation_age': models.RegulationAgeLUT,
-        'regulation_autority': models.RegulationAuhtorityLUT,
+        'regulation_autority': models.RegulationAuthorityLUT,
         'bag_limit_type': models.BagLimitTypeLUT,
         'resident_status': models.BagLimitResidentStatusLUT,
         'gear_type': models.GearTypeLUT,
         'management_year': models.FisheryManagementYearLUT,
         'fishery_regulation_type': models.FisheryRegulationTypeLUT,
         'fishery_type': models.FisheryTypeLUT,
-        'species': models.SpeciesLUT
+        'species': models.SpeciesLUT,
+        'species_group_type': models.SpeciesGroupTypeLUT
     }
     # check if requested table is available, if not throw a  404
     if requested_table not in allowed_tables:
