@@ -1,5 +1,5 @@
-from sqlalchemy.orm import Session, selectinload, subqueryload, joinedload, contains_eager
-from sqlalchemy import func
+from sqlalchemy.orm import Session, selectinload, subqueryload, joinedload, contains_eager, aliased
+from sqlalchemy import func, select
 from uuid import UUID
 from sqlalchemy.dialects import postgresql
 from zoneinfo import ZoneInfo
@@ -8,33 +8,42 @@ from fastapi import HTTPException
 
 
 def get_bags(db: Session):
-    return db.query(models.BagLimit, models.BagLimitTypeLUT.bag_limit_type_description, models.SpeciesGroupTypeLUT.species_group_type_description)\
-                    .join(models.BagLimitTypeLUT) \
-                    .join(models.SpeciesGroupTypeLUT) \
-                    .options(
-                        joinedload(
-                            models.BagLimit.childen_bag_limits
-                        )\
-                        .options(joinedload(models.BagLimit.bag_limit_type)) \
-                        .options(joinedload(models.BagLimit.species_group_type)) \
-                                ) \
-                    .all()
+     
+    #child = aliased()
+
+
+    # domain_alias = aliased(models.BagLimit)
+
+    # initial = db.query(models.BagLimit.bag_limit_id, models.BagLimit.parent_bag_limit_id).\
+    #             cte(recursive=True, name='lol')
+
+    # child = aliased(initial)
+
+    # domain_query = initial.union(
+    #             db.query(domain_alias.bag_limit_id, domain_alias.parent_bag_limit_id).join(child, child.c.parent_bag_limit_id == domain_alias.bag_limit_id))
+    
+    # a = db.query(domain_query)
+    # return a.all()
+    
+
+    bag = db.query(models.BagLimit).filter(models.BagLimit.parent_bag_limit_id == None).all()
+    return bag
+    # return db.query(models.BagLimit, models.BagLimitTypeLUT.bag_limit_type_description, models.SpeciesGroupTypeLUT.species_group_type_description)\
+    #                 .join(models.BagLimitTypeLUT) \
+    #                 .join(models.SpeciesGroupTypeLUT) \
+    #                 .options(
+    #                     joinedload(
+    #                         models.BagLimit.childen_bag_limits
+    #                     )\
+    #                     .options(joinedload(models.BagLimit.bag_limit_type)) \
+    #                     .options(joinedload(models.BagLimit.species_group_type)) \
+    #                             ) \
+    #                 .all()
 
 
 def get_catch_areas(db: Session):
-        
-
-
-
-        top = db.query(models.CatchAreaLUT).filter(models.CatchAreaLUT.parent_catch_area_id == None).all()
-
-
-        # iterate through the results emmiting select queries for the children
-        def unnester(query):
-            for i in query:
-                i.children_catch_areas
-                unnester(i.children_catch_areas)
-        unnester(top)
+        top = db.query(models.CatchAreaLUT)\
+            .filter(models.CatchAreaLUT.parent_catch_area_id == None).all()
         return top
     
 

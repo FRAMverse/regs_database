@@ -21,7 +21,7 @@ class CatchAreaLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
-    children_catch_areas = relationship('CatchAreaLUT', backref=backref("parent", remote_side=[catch_area_id]))
+    children_catch_areas = relationship('CatchAreaLUT', lazy='joined', join_depth=10)
     fishery = relationship('Fishery', back_populates = 'catch_area')
 
 class SpeciesLUT(Base):
@@ -198,13 +198,13 @@ class BagLimit(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
-    bag_limit_type = relationship('BagLimitTypeLUT', back_populates='bag_limit', uselist=False)
-    resident_status = relationship('BagLimitResidentStatusLUT', back_populates='bag_limit', uselist=False)
+    bag_limit_type = relationship('BagLimitTypeLUT', back_populates='bag_limit', lazy='joined', uselist=False)
+    resident_status = relationship('BagLimitResidentStatusLUT', back_populates='bag_limit', lazy='joined',  uselist=False)
     fishery_regulation = relationship('FisheryRegulation', back_populates='bag_limit', uselist=False)
-    regulation_age = relationship('RegulationAgeLUT', back_populates='bag_limit', uselist=False)
-    regulation_type = relationship('RegulationTypeLUT', back_populates='bag_limit', uselist=False)
-    species_group_type = relationship('SpeciesGroupTypeLUT', back_populates='bag_limit', uselist=False)
-    childen_bag_limits = relationship('BagLimit', backref=backref("parent", remote_side=[bag_limit_id]))
+    regulation_age = relationship('RegulationAgeLUT', back_populates='bag_limit', lazy='joined', uselist=False)
+    regulation_type = relationship('RegulationTypeLUT', back_populates='bag_limit', lazy='joined', uselist=False)
+    species_group_type = relationship('SpeciesGroupTypeLUT', back_populates='bag_limit', lazy='joined', uselist=False)
+    children_bag_limits = relationship('BagLimit', lazy='joined', join_depth=4)
 
 class SpeciesGroup(Base):
     __tablename__ = 'species_group'
