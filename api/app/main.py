@@ -1,4 +1,5 @@
-from fastapi import Depends, FastAPI, HTTPException, UploadFile, Form
+from fastapi import Depends, FastAPI, HTTPException, UploadFile, Form, Query
+from typing import Annotated
 from sqlalchemy.orm import Session
 from uuid import UUID
 from sql import crud, models, schemas
@@ -40,9 +41,9 @@ async def get_catch_areas(db: Session = Depends(get_db)):
     catch_areas = crud.get_catch_areas(db)
     return catch_areas
 
-@app.get("/bag")
-async def get_bags(db: Session = Depends(get_db)):
-    bags = crud.get_bags(db)
+@app.get('/bag/')
+async def get_bags(q: Annotated[str | None, Query(max_length=50)] = None, db: Session = Depends(get_db)):
+    bags = crud.get_bags(db, q)
     return bags
 
 @app.get('/reg')

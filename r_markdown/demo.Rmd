@@ -48,13 +48,58 @@ PostgreSQL's time zone is UTC. Set the locale to the proper timezone for the dat
 SET timezone = 'America/Anchorage'
 ```
 
+# Explaination of Hierarchical Relationships as they relate to catch areas and bag limits
+in this database
+
+## Catch Areas
+Catch areas, and defined purely spatially have many configurations and have the ability
+to change over time. Sometimes regulatory authorities subdivide and/or have intersecting 
+'sub' catch areas to gain a finer control of a fishery in a spatial context. These 
+subdivide catch areas often have separate regulations, but still need 
+to have the context of the greater catch area. Databases, being tabular in a nature will normally 
+have a catch area per row, with relationships expressed as joins to other tables. This architecture is limiting 
+because each catch area would need a copied or aliased table to join to.
+
+A hierarchical data structure is a solution to this problem. Having a catch table
+join *to itself* allows for unlimited recursion and will maintain the referential integrity - 
+so children catch areas are always tied to their parents.
 
 
+## Bag Limits
+Bag limits are similar to catch areas and can be represented in a similar hierarchical 
+data structure. Take a simple example: annual, possession, and daily limits. A possession limit is part 
+of an annual limit, and a daily limit is part of a possession limit. 
+
+![Annual limits](annual_limit_hierarchy.png)
+This database retains the referential integrity of each level of bag limit (parent, grand, child, ...). This allows 
+for each individual bag limit to be represented atomically, while still connected to related bag limits. 
+Ultimately this will allow to query for a single bag limit, but the returning data will have all 
+associated bag limits to give the single bag limit context.
+
+A more complex example would be a regulation:
+<blockquote>
+6 Salmon may be kept either Chinook or Coho, 4 fish can be juvenile and non-selective, 2 adults may be 
+retained of which only one can be an unmarked Chinook
+</blockquote>
+
+Without hierarchical relations this regulation would have to be express fully in a text field. This 
+**does not** lend itself well to querying as one would have to use wildcard qualifiers to return 
+the regulation. Furthermore, once that row is returned it will appear as is making any type of 
+automation and analysis extremely difficult without a human reading the regulation and 
+parsing it out.
+
+![Complex](bag_limits_hierarchy.png)
+
+In the hierarchical model each bag limit is atomic but connected to each other forming a 
+data tree. For example if someone wanted to query for an adult chinook retention bag limit 
+in the above model, the resulting data returned would have the target bag limit and its ancestor 
+bag limits. Chinook MSF 1 fish limit -> 2 Chinook or Coho can be retained -> 
+6 fish total limit Chinook + Coho. 
 
 # Queries of the database
 
 
-## Hierachical Catch Areas
+## Hierarchical Catch Areas
 
 The catch_area_lut table has field that allow for self-joins (parent_bag_limit_id). This join allows for a recursive data structure e.g. catch areas within catch areas within catch areas to infinity without loss of the relationship - each catch area knows what its parent catch area is.
 

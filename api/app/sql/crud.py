@@ -7,38 +7,8 @@ from . import models, schemas
 from fastapi import HTTPException
 
 
-def get_bags(db: Session):
-     
-    #child = aliased()
-
-
-    # domain_alias = aliased(models.BagLimit)
-
-    # initial = db.query(models.BagLimit.bag_limit_id, models.BagLimit.parent_bag_limit_id).\
-    #             cte(recursive=True, name='lol')
-
-    # child = aliased(initial)
-
-    # domain_query = initial.union(
-    #             db.query(domain_alias.bag_limit_id, domain_alias.parent_bag_limit_id).join(child, child.c.parent_bag_limit_id == domain_alias.bag_limit_id))
-    
-    # a = db.query(domain_query)
-    # return a.all()
-    
-
-    bag = db.query(models.BagLimit).filter(models.BagLimit.parent_bag_limit_id == None).all()
-    return bag
-    # return db.query(models.BagLimit, models.BagLimitTypeLUT.bag_limit_type_description, models.SpeciesGroupTypeLUT.species_group_type_description)\
-    #                 .join(models.BagLimitTypeLUT) \
-    #                 .join(models.SpeciesGroupTypeLUT) \
-    #                 .options(
-    #                     joinedload(
-    #                         models.BagLimit.childen_bag_limits
-    #                     )\
-    #                     .options(joinedload(models.BagLimit.bag_limit_type)) \
-    #                     .options(joinedload(models.BagLimit.species_group_type)) \
-    #                             ) \
-    #                 .all()
+def get_bags(db: Session, bag_limit_id: str):
+    return db.query(models.BagLimit).filter(models.BagLimit.parent_bag_limit_id == None).all()
 
 
 def get_catch_areas(db: Session):
