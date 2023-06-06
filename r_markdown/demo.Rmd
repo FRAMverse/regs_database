@@ -48,8 +48,7 @@ PostgreSQL's time zone is UTC. Set the locale to the proper timezone for the dat
 SET timezone = 'America/Anchorage'
 ```
 
-# Explaination of Hierarchical Relationships as they relate to catch areas and bag limits
-in this database
+# Hierarchical Relationships
 
 ## Catch Areas
 Catch areas, and defined purely spatially have many configurations and have the ability
@@ -71,10 +70,80 @@ data structure. Take a simple example: annual, possession, and daily limits. A p
 of an annual limit, and a daily limit is part of a possession limit. 
 
 ![Annual limits](annual_limit_hierarchy.png)
+
+
 This database retains the referential integrity of each level of bag limit (parent, grand, child, ...). This allows 
 for each individual bag limit to be represented atomically, while still connected to related bag limits. 
 Ultimately this will allow to query for a single bag limit, but the returning data will have all 
 associated bag limits to give the single bag limit context.
+
+JSON Representation of hierarchical bag limits - Steelhead
+
+An example of representing this hierarchy with JavaScript Object Notation 
+(JSON). Note that the indented child_bag_limits fields holds the same data model as its 
+parent and the *bag_limit_type_description* field.
+
+```{json}
+[
+  {
+    "minimum_size_limit_centimeters": null,
+    "parent_bag_limit_id": null,
+    "bag_limit_total": 4,
+    "maximum_size_limit_centimeters": 91.44,
+    "resident_status": {
+      "bag_limit_angler_resident_status_description": "Not applicable"
+    },
+    "regulation_type": {
+      "regulation_type_code": "NS",
+      "regulation_type_description": "Non-Selective Fishery"
+    },
+    "bag_limit_type": {
+      "bag_limit_type_description": "Annual"
+    },
+    "species_group_type": {
+      "species_group_type_description": "Steelhead"
+    },
+    "children_bag_limits": [
+      {
+        "minimum_size_limit_centimeters": null,
+        "bag_limit_total": 2,
+        "maximum_size_limit_centimeters": 91.44,
+        "regulation_type": {
+          "regulation_type_code": "NS"
+        },
+        "bag_limit_type": {
+          "bag_limit_type_description": "Possession",
+        },
+        "species_group_type": {
+          "species_group_type_description": "Steelhead"
+        },
+        "children_bag_limits": [
+          {
+            "minimum_size_limit_centimeters": null,
+            "bag_limit_total": 1,
+            "maximum_size_limit_centimeters": 91.44,
+            "regulation_type": {
+              "regulation_type_code": "NS",
+              "regulation_type_description": "Non-Selective Fishery",
+            },
+            "bag_limit_type": {
+              "bag_limit_type_description": "Daily",
+            },
+            "species_group_type": {
+              "species_group_type_description": "Steelhead"
+            },
+            "children_bag_limits": []
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+
+
+
 
 A more complex example would be a regulation:
 <blockquote>
@@ -96,10 +165,6 @@ in the above model, the resulting data returned would have the target bag limit 
 bag limits. Chinook MSF 1 fish limit -> 2 Chinook or Coho can be retained -> 
 6 fish total limit Chinook + Coho. 
 
-# Queries of the database
-
-
-## Hierarchical Catch Areas
 
 The catch_area_lut table has field that allow for self-joins (parent_bag_limit_id). This join allows for a recursive data structure e.g. catch areas within catch areas within catch areas to infinity without loss of the relationship - each catch area knows what its parent catch area is.
 
@@ -119,6 +184,7 @@ select cal.catch_area_description
 ) select * from catch_areas
 where parent_catch_area = 'South East Alaska'
 ```
+
 Puyallup River (Puget Sound) its children catch areas
 ```{sql, connection=con}
 with recursive catch_areas as (
@@ -136,7 +202,47 @@ select cal.catch_area_description
 where parent_catch_area = 'Puyallup River'
 ```
 
-## Queries
+# Queries
+
+The catch_area_lut table has field that allow for self-joins (parent_bag_limit_id). This join allows for a recursive data structure e.g. catch areas within catch areas within catch areas to infinity without loss of the relationship - each catch area knows what its parent catch area is.
+
+Southeast Alaska and its children catch areas
+```{sql, connection=con}
+with recursive catch_areas as (
+select cal.catch_area_description as parent_catch_area,
+       null as children_catch_areas
+from catch_area_lut cal
+where parent_catch_area_id is null
+union all
+select cal.catch_area_description
+    parent_catch_area,
+    cal2.catch_area_description children_catch_areas
+                               from catch_area_lut cal
+                                        join catch_area_lut cal2 on cal.catch_area_id = cal2.parent_catch_area_id
+) select * from catch_areas
+where parent_catch_area = 'South East Alaska'
+```
+
+Puyallup River (Puget Sound) its children catch areas
+```{sql, connection=con}
+with recursive catch_areas as (
+select cal.catch_area_description as parent_catch_area,
+       null as children_catch_areas
+from catch_area_lut cal
+where parent_catch_area_id is null
+union all
+select cal.catch_area_description
+    parent_catch_area,
+    cal2.catch_area_description children_catch_areas
+                               from catch_area_lut cal
+                                        join catch_area_lut cal2 on cal.catch_area_id = cal2.parent_catch_area_id
+) select * from catch_areas
+where parent_catch_area = 'Puyallup River'
+```
+
+
+
+
 Dump the regulations for ADFG. This is aimed at being a capture of the regulations on page 9 of [this](https://www.adfg.alaska.gov/static/regulations/fishregulations/PDFs/southeast/2022se_sfregs_complete.pdf) document.
 
 ```{sql, connection=con, max.print = NA}

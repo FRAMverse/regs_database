@@ -8,7 +8,7 @@ from fastapi import HTTPException
 
 
 def get_bags(db: Session, bag_limit_id: str):
-    return db.query(models.BagLimit).filter(models.BagLimit.parent_bag_limit_id == None).all()
+    return db.query(models.BagLimit).filter(models.BagLimit.parent_bag_limit_id == None).filter(models.BagLimit.bag_limit_id == 'b1549260-ef72-4126-bd9d-f677015ea52a').all()
 
 
 def get_catch_areas(db: Session):
