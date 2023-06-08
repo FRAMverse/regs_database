@@ -21,7 +21,7 @@ class CatchAreaLUT(Base):
     created_datetime = Column(Date, nullable=False)
     modified_by = Column(String)
     modified_datetime = Column(Date)
-    children_catch_areas = relationship('CatchAreaLUT', lazy='joined', join_depth=10)
+    children_catch_areas = relationship('CatchAreaLUT', lazy='joined', join_depth=4)
     fishery = relationship('Fishery', back_populates = 'catch_area')
 
 class SpeciesLUT(Base):
@@ -158,7 +158,7 @@ class Fishery(Base):
     modified_by = Column(String)
     modified_datetime = Column(Date)
     fishery_type = relationship('FisheryTypeLUT', back_populates='fishery', uselist=False)
-    fishery_regulation = relationship('FisheryRegulation', back_populates='fishery')
+    fishery_regulation = relationship('FisheryRegulation', lazy='joined', back_populates='fishery')
     catch_area = relationship('CatchAreaLUT', back_populates='fishery', uselist=False)
     management_year = relationship('FisheryManagementYearLUT', back_populates = 'fishery', uselist=False)
     regulation_authority = relationship('RegulationAuthorityLUT', back_populates = 'fishery', uselist=False)
@@ -179,7 +179,7 @@ class FisheryRegulation(Base):
     fishery = relationship('Fishery', back_populates='fishery_regulation')
     gear_type = relationship('GearTypeLUT', back_populates='fishery_regulation', uselist=False)
     fishery_regulation_type = relationship('FisheryRegulationTypeLUT', back_populates='fishery_regulation', uselist=False)
-    bag_limit = relationship('BagLimit', back_populates = 'fishery_regulation')
+    bag_limit = relationship('BagLimit', lazy='selectin', back_populates = 'fishery_regulation')
 
 class BagLimit(Base):
     __tablename__ = 'bag_limit'
@@ -204,7 +204,7 @@ class BagLimit(Base):
     regulation_age = relationship('RegulationAgeLUT', back_populates='bag_limit', lazy='joined', uselist=False)
     regulation_type = relationship('RegulationTypeLUT', back_populates='bag_limit', lazy='joined', uselist=False)
     species_group_type = relationship('SpeciesGroupTypeLUT', back_populates='bag_limit', lazy='joined', uselist=False)
-    children_bag_limits = relationship('BagLimit', lazy='joined', join_depth=4)
+    children_bag_limits = relationship('BagLimit', lazy='joined', join_depth=10)
 
 class SpeciesGroup(Base):
     __tablename__ = 'species_group'
