@@ -227,3 +227,6 @@ vignettes/*.pdf
 
 # Access Databases
 *.mdb
+
+# config file
+config.py

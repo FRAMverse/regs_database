@@ -1,0 +1,75 @@
+---
+title: "Pull data into R"
+author: "Ty Garber"
+date: "2023-06-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+## API Approach
+### Lists
+```{r}
+library(jsonlite)
+# catch areas to list
+catch_areas <- jsonlite::read_json('http://localhost:8000')
+```
+
+Walking the data structure, first catch area South East Alaska
+```{r}
+catch_areas[[1]]$catch_area_description
+# or
+purrr::pluck(catch_areas, 1, 'catch_area_description')
+
+pssp::ds_historical_cpue_chart()
+```
+
+Child and Grandchild of SE Alaska
+```{r}
+# one of the children of SE Alaska - Yakutat Area
+catch_areas[[1]]$children_catch_areas[[1]]$catch_area_description
+# or
+purrr::pluck(catch_areas, 1, 'children_catch_areas', 1,'catch_area_description')
+
+# Grandchild of SE Alaska, Child of Yakutat - Situk River - Three levels down
+catch_areas[[1]]$children_catch_areas[[1]]$children_catch_areas[[1]]$catch_area_description
+# or
+purrr::pluck(catch_areas, 1, 'children_catch_areas', 1,'children_catch_areas', 1, 'catch_area_description')
+
+```
+
+### Dataframes
+
+Pulling from the API
+```{r}
+# yields nested dataframes which can be unnested
+catch_areas <- jsonlite::fromJSON('http://localhost:8000') %>% as_tibble()
+
+```
+
+Unnesting the data for a single flat dataframe
+```{r}
+parents_children <- catch_areas %>%
+  select(catch_area_description, children_catch_areas) %>%
+  unnest(children_catch_areas,names_sep = '_') %>%
+  select(parent_catch_area_description = catch_area_description, child_catch_area_description = children_catch_areas_catch_area_description, children_catch_areas_children_catch_areas)
+
+grandchildren <- parents_children %>%
+  filter(map_int(children_catch_areas_children_catch_areas, length) != 0) %>%
+  unnest(children_catch_areas_children_catch_areas, names_sep = '_') %>%
+  select(parent_catch_area_description, child_catch_area_description, grand_child_catch_area_description = children_catch_areas_children_catch_areas_catch_area_description)
+
+all <- parents_children %>%
+  bind_rows(grandchildren) %>%
+  select(-children_catch_areas_children_catch_areas)
+
+all %>%
+  arrange(parent_catch_area_description)
+
+```
+
+

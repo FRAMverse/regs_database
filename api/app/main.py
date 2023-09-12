@@ -1,4 +1,5 @@
-from fastapi import Depends, FastAPI, HTTPException, UploadFile, Form
+from fastapi import Depends, FastAPI, HTTPException, UploadFile, Form, Query
+from typing import Annotated
 from sqlalchemy.orm import Session
 from uuid import UUID
 from sql import crud, models, schemas
@@ -35,53 +36,67 @@ def get_db():
         db.close()
 
 
-@app.get("/geo/")
-async def get_all_geo_json(db: Session = Depends(get_db)):
-    geo = crud.get_geo_all(db)
-    return geo
+@app.get("/")
+async def get_catch_areas(db: Session = Depends(get_db)):
+    catch_areas = crud.get_catch_areas(db)
+    return catch_areas
+
+@app.get('/bag/')
+async def get_bags(q: Annotated[str | None, Query(max_length=50)] = None, db: Session = Depends(get_db)):
+    bags = crud.get_bags(db, q)
+    return bags
+
+@app.get('/reg')
+async def get_reg(db: Session = Depends(get_db)):
+    regs = crud.get_regs(db)
+    return regs
+
+@app.get('/lut/{lut}')
+async def lut(lut: str, db: Session = Depends(get_db)):
+    lut = crud.lut(db, lut)
+    return lut
+
+# @app.get("/geo/{catch_area_id}")
+# async def read_geojson_only_by_area(catch_area_id: UUID, db: Session = Depends(get_db)):
+#     geo = crud.get_geo(db, catch_area_id)
+#     return geo
+
+# @app.post("/geo/")
+# async def upload_geojson(file: UploadFile, description: str = Form(), db: Session = Depends(get_db)):
+#     try:
+#         contents = await file.read()
+#         geoJSON = json.loads(contents)
+#         insert = {
+#             'description': description, 
+#             'geom': geoJSON
+#             }
+#         geom = crud.create_geo(db, geo = insert)
+#         return geom
+#     except:
+#         raise HTTPException(500, 'Bad Content')
 
 
-@app.get("/geo/{catch_area_id}")
-async def read_geojson_only_by_area(catch_area_id: UUID, db: Session = Depends(get_db)):
-    geo = crud.get_geo(db, catch_area_id)
-    return geo
+# @app.get("/api/catchareas/", response_model=list[schemas.CatchArea])
+# async def read_users(db: Session = Depends(get_db)):
+#     geo = crud.get_geo_all_areas(db)
+#     return geo
 
-@app.post("/geo/")
-async def upload_geojson(file: UploadFile, description: str = Form(), db: Session = Depends(get_db)):
-    try:
-        contents = await file.read()
-        geoJSON = json.loads(contents)
-        insert = {
-            'description': description, 
-            'geom': geoJSON
-            }
-        geom = crud.create_geo(db, geo = insert)
-        return geom
-    except:
-        raise HTTPException(500, 'Bad Content')
+# @app.get("/api/rules/{catch_area_id}")
+# async def read_rules(catch_area_id: UUID, db: Session = Depends(get_db)):
+#     rules = crud.get_rules(db, catch_area_id)
+#     return rules
 
+# @app.get('/api/regulationtypes/', response_model=list[schemas.RegulationType])
+# async def read_regtypes(db: Session = Depends(get_db)):
+#     regulation_types = crud.get_regulation_types(db)
+#     return regulation_types
 
-@app.get("/api/catchareas/", response_model=list[schemas.CatchArea])
-async def read_users(db: Session = Depends(get_db)):
-    geo = crud.get_geo_all_areas(db)
-    return geo
+# @app.get('/api/species/', response_model=list[schemas.Species])
+# async def read_species(db: Session = Depends(get_db)):
+#     species = crud.get_species(db)
+#     return species
 
-@app.get("/api/rules/{catch_area_id}")
-async def read_rules(catch_area_id: UUID, db: Session = Depends(get_db)):
-    rules = crud.get_rules(db, catch_area_id)
-    return rules
-
-@app.get('/api/regulationtypes/', response_model=list[schemas.RegulationType])
-async def read_regtypes(db: Session = Depends(get_db)):
-    regulation_types = crud.get_regulation_types(db)
-    return regulation_types
-
-@app.get('/api/species/', response_model=list[schemas.Species])
-async def read_species(db: Session = Depends(get_db)):
-    species = crud.get_species(db)
-    return species
-
-@app.post("/api/rules/")
-async def create_rule(rule: schemas.CreateRule, db: Session = Depends(get_db)):
-    rules = crud.create_rule(db, rule)
-    return rules
+# @app.post("/api/rules/")
+# async def create_rule(rule: schemas.CreateRule, db: Session = Depends(get_db)):
+#     rules = crud.create_rule(db, rule)
+#     return rules

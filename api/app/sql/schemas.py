@@ -4,51 +4,58 @@ from uuid import UUID
 import datetime
 
 
-class GeoBase(BaseModel):
-    catch_area_id: UUID
-    description: str
-    geom: FeatureModel
+# class GeoBase(BaseModel):
+#     catch_area_id: UUID
+#     description: str
+#     geom: FeatureModel
 
-class Geo(GeoBase):
-    pass #wtf is going on here?
-    class Config:
-        orm_mode = True
+# class Geo(GeoBase):
+#     pass #wtf is going on here?
+#     class Config:
+#         orm_mode = True
 
-class CatchArea(BaseModel):
-    catch_area_id: UUID
-    description: str
+# class CatchArea(BaseModel):
+#     catch_area_id = UUID
+#     parent_catch_area_id = UUID
+#     catch_area_code = str
+#     catch_area_description = str
+#     shape = str
+#     created_by = str
+#     created_datetime = datetime.datetime
+#     modified_by = str
+#     modified_datetime = datetime.datetime
 
-class RulesBase(BaseModel):
-    rules_id: UUID | None = None
-    catch_area_id: UUID
+# class RulesBase(BaseModel):
+#     rules_id: UUID | None = None
+#     catch_area_id: UUID
 
-class Rules(RulesBase):
-    description: str
-    common_name: str
-    regulation_type_code: str
-    start_rule_datetime: datetime.datetime
-    end_rule_datetime: datetime.datetime
+# class Rules(RulesBase):
+#     description: str
+#     common_name: str
+#     regulation_type_code: str
+#     start_rule_datetime: datetime.datetime
+#     end_rule_datetime: datetime.datetime
 
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True
 
-class RegulationType(BaseModel):
-    regulation_type_id: UUID
-    regulation_type_code: str
-    regulation_type_description: str
+# class RegulationType(BaseModel):
+#     regulation_type_id: UUID
+#     regulation_type_code: str
+#     regulation_type_description: str
 
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True
 
-class Species(BaseModel):
-    species_id: UUID
-    common_name: str
+# class Species(BaseModel):
+#     species_id: UUID
+#     common_name: str
 
-class CreateRule(RulesBase):
-    regulation_type_id: UUID
-    start_rule_datetime: datetime.datetime
-    end_rule_datetime: datetime.datetime
-    species_id: UUID
+# class CreateRule(RulesBase):
+#     regulation_type_id: UUID
+#     start_rule_datetime: datetime.datetime
+#     end_rule_datetime: datetime.datetime
+#     species_id: UUID
 
 
 # class CatchAreaAlt(BaseModel):
